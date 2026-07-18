@@ -1,0 +1,38 @@
+name: Deploy monitoring stack
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 서버에 파일을 직접 복사
+      - name: Copy config files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.MONITORING_HOST }}
+          username: ${{ secrets.MONITORING_USER }}
+          key: ${{ secrets.MONITORING_SSH_KEY }}
+          source: "docker-compose.yml,loki/,prometheus/,grafana/,nginx/"
+          target: ~/bscene-monitoring
+
+      - name: deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.MONITORING_HOST }}
+          username: ${{ secrets.MONITORING_USER }}
+          key: ${{ secrets.MONITORING_SSH_KEY }}
+          script: |
+            cd ~/bscene-monitoring
+            cat > .env <<EOF
+            SERVICE_EC2_IP=${{ secrets.SERVICE_EC2_IP }}
+            SERVER_NAME=${{ secrets.SERVER_NAME }}
+            GRAFANA_ADMIN_USER=${{ secrets.GRAFANA_ADMIN_USER }}
+            GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+            EOF
+            docker compose up -d --force-recreate --remove-orphans
+            docker image prune -f

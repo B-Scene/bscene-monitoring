@@ -49,11 +49,15 @@ services:
     container_name: grafana
     logging: *default-logging
     restart: always
-    ports:
-      - "3000:3000"
+    # nginx가 443으로 리버스 프록시하므로 호스트에 직접 노출하지 않음
+    # (3000 인바운드를 열 필요 없음 → 접근은 https 단일 경로로 통일)
+    expose:
+      - "3000"
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      # 프록시 뒤에 있을 때 리다이렉트·공유 링크가 https 도메인으로 생성되도록 지정
+      - GF_SERVER_ROOT_URL=https://${SERVER_NAME}
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
@@ -62,6 +66,34 @@ services:
       - prometheus
     networks:
       - monitoring
+
+  nginx:
+    # 서비스 EC2의 nginx와 동일한 패턴:
+    # conf는 템플릿으로 마운트 → envsubst로 SERVER_NAME만 치환
+    # 6시간마다 reload → letsencrypt 갱신된 인증서 반영
+    image: nginx:stable
+    container_name: nginx
+    logging: *default-logging
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - SERVER_NAME=${SERVER_NAME}
+    volumes:
+      - ./nginx/conf.d/default.conf:/etc/nginx/templates/default.conf.template:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      - grafana
+    networks:
+      - monitoring
+    command: >
+      /bin/sh -c "envsubst '$${SERVER_NAME}'
+      < /etc/nginx/templates/default.conf.template
+      > /etc/nginx/conf.d/default.conf
+      && (while :; do sleep 6h & wait $${!}; nginx -s reload; done&)
+      && exec nginx -g 'daemon off;'"
 
 networks:
   monitoring:
