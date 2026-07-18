@@ -2,7 +2,7 @@ global:
   scrape_interval: 15s # 15s는 메모리 변량 측정에 충분함. 더 자주 측정 시, ec2에 scrape 부하로 인해 오염될 수 있음
 
 scrape_configs:
-  - job-name: node-exporter
+  - job_name: node-exporter
     static_configs:
       - targets: ['__SERVICE_EC2_IP__:9100']
         labels:
