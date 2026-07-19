@@ -25,7 +25,7 @@ schema_config:
         prefix: index_
         period: 24h
 
-limits_configs:
+limits_config:
   retention_period: 360h
 
 compactor:
