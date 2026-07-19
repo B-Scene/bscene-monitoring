@@ -9,7 +9,7 @@ scrape_configs:
           instance_role: service
 
 # JVM 메모리 점유율 측정
-#   - job_name: spring
-#     metrics_path: /actuator/prometheus
-#     static_configs:
-#       - targets: ['__SERVICE_EC2_IP__:80']
+  - job_name: spring
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['__SERVICE_EC2_IP__:80']
