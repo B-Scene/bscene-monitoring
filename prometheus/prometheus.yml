@@ -13,3 +13,5 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets: ['__SERVICE_EC2_IP__:8081']
+        labels:
+          application: bscene
