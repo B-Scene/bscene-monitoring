@@ -7,6 +7,11 @@ scrape_configs:
       - targets: ['__SERVICE_EC2_IP__:9100']
         labels:
           instance_role: service
+          env: prod
+      - targets: ['__LOADTEST_EC2_IP__:9100']
+        labels:
+          instance_role: service
+          env: loadtest
 
 # JVM 메모리 점유율 측정
   - job_name: spring
@@ -15,3 +20,8 @@ scrape_configs:
       - targets: ['__SERVICE_EC2_IP__:8081']
         labels:
           application: bscene
+          env: prod
+      - targets: ['__LOADTEST_EC2_IP__:8081']
+        labels:
+          application: bscene
+          env: loadtest

@@ -29,6 +29,7 @@ services:
       - "9090"
     environment:
       - SERVICE_EC2_IP=${SERVICE_EC2_IP}
+      - LOADTEST_EC2_IP=${LOADTEST_EC2_IP}
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml.template:ro
       - prometheus-data:/prometheus
@@ -36,7 +37,8 @@ services:
       - /bin/sh
       - -c
       - |
-        sed "s/__SERVICE_EC2_IP__/$${SERVICE_EC2_IP}/g" \
+        sed -e "s/__SERVICE_EC2_IP__/$${SERVICE_EC2_IP}/g" \
+            -e "s/__LOADTEST_EC2_IP__/$${LOADTEST_EC2_IP}/g" \
           /etc/prometheus/prometheus.yml.template > /tmp/prometheus.yml
         exec /bin/prometheus \
           --config.file=/tmp/prometheus.yml \

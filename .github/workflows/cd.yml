@@ -30,6 +30,7 @@ jobs:
             cd ~/bscene-monitoring
             cat > .env <<EOF
             SERVICE_EC2_IP=${{ secrets.SERVICE_EC2_IP }}
+            LOADTEST_EC2_IP=${{ secrets.LOADTEST_EC2_IP }}
             SERVER_NAME=${{ secrets.SERVER_NAME }}
             GRAFANA_ADMIN_USER=${{ secrets.GRAFANA_ADMIN_USER }}
             GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
